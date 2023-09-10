@@ -181,7 +181,7 @@
             )
           )
          )
-      (reverseList (throwPath n BST empty)) ; Comenzar la búsqueda desde la raíz ('root').
+      (reverseList (throwPath n BST empty)) ; Comenzar la búsqueda desde la raíz.
       )
     )
   )
