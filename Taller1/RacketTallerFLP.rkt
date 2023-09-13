@@ -1,4 +1,36 @@
 #lang eopl
+
+#|---------------------------------------------------------------------------|#
+;========================================================================================-=;
+; PUNTO 1,invertir listas                                                                  ;
+;==========================================================================================;
+#|invertir listas
+con esta funcion invertimos los pares individualmente|#
+#|GRAMATICA:
+<List> ::= '() | (<Scheme-Value> <List>)
+<Scheme-Value> ::= <Letra> | <Digito>  
+|#
+(define (invertir-pares par)
+  (cons (cadr par) (cons (car par) '()))
+  )
+#|con la siguiente funcion usamos la funcion de invertir pares con la lista L
+y luego se llama recursivamente la misma funcion invert para que continue con el resto de la lista|#
+(define (invert L)
+  (if (null? L)
+      '()
+      (cons (invertir-pares (car L)) (invert (cdr L)))))
+
+#|Ya con lo anterior podemos hacer pruebas como la siguiente:
+(invert '((a 1) (a 2) (1 b) (2 b)))
+ R/ ((1 a) (2 a) (b 1) (b 2))
+(invert '((5 9) (10 91) (82 7) (a e) ("hola" "Mundo")))
+ R/ ((9 5) (91 10) (7 82) (e a) ("Mundo" "hola"))
+(invert '(("es" "racket") ("genial" "muy") (17 29) (81 o)))
+ R/ (("racket" "es") ("muy" "genial") (29 17) (o 81))
+|#
+
+#|---------------------------------------------------------------------------|#
+
 (define empty? (lambda (l) (null? l)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,6 +84,37 @@
 (list-set '(a b c d) 3 '(1 5 10))
 (list-set '(a b c d) 2 '(1 2))
 (list-set '(1 2 3 4 5 E3) 2 'B2)
+
+#|---------------------------------------------------------------------------|#
+;========================================================================================-=;
+; PUNTO 4 , filtrar por numero, simbolo o palabras                                         ;
+;==========================================================================================;
+#||#
+#|GRAMATICA:
+<List> ::= '() | (<Scheme-Value> <List>)
+<Scheme-Value> ::= <Letra> | <Digito>  
+|#
+#|tenemo la funcion de filtrar, la cual recibe un preficado p y una lista para verificar|#
+(define (filter-in p l)
+  ;;tenemos la condicion de si la lista no tiene nada, entonces retorna una lista vacia
+  (cond ((null? l) '())
+        ;;aqui empieza a validar cual predicado es el que pasamos, luego con el cons tomamos
+        ;;la cabeza de la lista y luego hacemos un llamado recursivo de la funcion con el resto de la lista
+        ((p (car l)) (cons (car l) (filter-in p (cdr l))))
+        ;;de lo contrario filtramos con el predicado en el resto de la lista l
+        (else (filter-in p (cdr l)))))
+
+
+
+#|Ya con lo anterior podemos hacer pruebas como la siguiente:
+(filter-in number? '(a 2 (1 3) b 7))
+ R/ (2 7)
+(filter-in symbol? '(a (b c) 17 foo))
+ R/ (a foo)
+(filter-in string? '(a b u "univalle" "racket" "flp" 28 90 (1 2 3)))
+ R/ ("univalle" "racket" "flp")
+|#
+#|---------------------------------------------------------------------------|#
 
 
 
@@ -112,6 +175,68 @@
 (swapper '(a b) '(1 2) '(x a b (a b) 1 2 x (1 2)))
 (swapper 'x 'y '(1 x 3 y))
 (swapper 1 3 '(1 x 3 y))
+
+
+#|---------------------------------------------------------------------------|#
+;========================================================================================-=;
+; PUNTO 7                                                                                  ;
+;==========================================================================================;
+#|GRAMATICA:
+<List> ::= '() | {(<Scheme-Value>)}*
+<Scheme-Value> ::= <Letra> | <Digito>  
+|#
+#|temenos una funcion llamada cartesian-product que recibe como
+argumentos 2 listas de simbolos sin repeticiones L1 y L2. La funcion debe
+retornar una lista de tuplas que representen el producto cartesiano entre L1
+y L2. Los pares pueden aparecer en cualquier orden|#
+
+#|la funcion my-append toma dos listas, lst1 y lst2, y las concatena en una nueva lista con el cons|#
+(define (my-append lst1 lst2)
+  ;;aqui validamos si la lista 1(lst1) es vacia, retorne la lista 2 (lst2)
+  (if (null? lst1)
+      lst2
+      (cons (car lst1) (my-append (cdr lst1) lst2))))
+
+
+#|la funcion my-map toma una función func y una lista lst, y aplica la función func
+a cada elemento de la lista lst, devolviendo una nueva lista con los resultados.|#
+(define (my-map func lst)
+  ;;aqui validamos si la funcion lst es vacia, retorne una lista vacia
+  (if (null? lst)
+      '()
+      (cons (func (car lst)) (my-map func (cdr lst)))))
+
+#|la funcion my-append-map toma una función func y una lista lst, y aplica la función func a cada
+elemento de la lista lst. Luego, concatena los resultados de estas aplicaciones en una nueva lista.|#
+(define (my-append-map func lst)
+  ;;aqui validamos si la lista es vacia
+  (if (null? lst)
+      '()
+      ;; aqui usamos la funcion anterior my-appen la cual ya esta explicada anteriormente que recibe 2 listas
+      (my-append (func (car lst)) (my-append-map func (cdr lst)))))
+
+#|tenemos la función llamada cartesian-product en Scheme. Esta función toma dos listas, L1 y L2,
+y calcula el producto cartesiano entre ellas.
+aqui la función my-append-map se usa para realizar la operación principal. Dentro de my-append-map, se define
+una función anónima utilizando lambda, Esta función toma un elemento x de L1 y utiliza la función my-map
+para aplicar otra función anónima a cada elemento y de L2. La función anónima interna crea una lista
+que contiene x y y como elementos.
+|#
+(define (cartesian-product L1 L2)
+  (my-append-map
+   (lambda (x)
+     (my-map (lambda (y) (list x y)) L2))
+   L1))
+
+#|Ya con lo anterior podemos hacer pruebas como la siguiente:
+(cartesian-product '(a b c) '(x y))
+ R/ ((a x) (a y) (b x) (b y) (c x) (c y))
+(cartesian-product '(p q r) '(5 6 7))
+ R/ ((p 5) (p 6) (p 7) (q 5) (q 6) (q 7) (r 5) (r 6) (r 7))
+|#
+
+#|---------------------------------------------------------------------------|#
+
 
 
 
@@ -202,6 +327,39 @@
 (inversions '(1 2 3 4))
 (inversions '(3 2 1))
 
+#|---------------------------------------------------------------------------|#
+;===================================================================================;
+; PUNTO 10                                                                          ;
+;===================================================================================;
+#|GRAMATICA:
+<List> ::= '() | (<Scheme-Value> <List>)
+<Scheme-Value> ::= <Letra> | <Digito>  
+|#
+#|Tenemos una funcion llamada up que recibe como entrada una
+lista L, y lo que debe realizar la funcion es remover un par de parentesis a
+cada elemento del nivel mas alto de la lista. Si un elemento de este nivel
+no es una lista (no tiene parentesis), este elemento es incluido en la salida
+resultante sin modificacion alguna.|#
+
+(define (up lst)
+  ;;validamos si la lista inicial esta vacia, si es asi retorna una lista vacia
+  (if (null? lst)
+      '()
+      #|aqui usamos una funcion llamada my-apend, la cual fue creada y explicada en el ejercicio
+       numero 7 del taller actual que sirve para concatenar dos listas, validamos con el if Si el primer elemento
+       de lst es una lista, si es asi,se agrega ese elemento directamente a la lista resultante.
+       De lo contrario, se crea una lista que contiene el primer elemento de lst. Luego, se llama
+       recursivamente a la función up con el resto de lst y se concatena el resultado con la lista resultante.|#
+      (my-append (if (list? (car lst)) (car lst) (list (car lst))) (up (cdr lst)))
+  ))
+
+#|Ya con lo anterior podemos hacer pruebas como la siguiente:
+ (up '((1 2) (3 4)))
+ R/ (1 2 3 4)
+ (up '((x (y)) z))
+ R/ (x (y) z)
+|#
+#|---------------------------------------------------------------------------|#
 
 
 ;===================================================================================;
@@ -248,6 +406,47 @@
 (filter-acum 1 10 - 30 odd?)
 (filter-acum 1 10 + 0 even?)
 (filter-acum 1 10 + 0 odd?)
+
+
+#|---------------------------------------------------------------------------|#
+;=====================================================================================;
+; PUNTO 13 , operadores                                                               ;
+;=====================================================================================;
+#|GRAMATICA:
+<List> ::= {(<Scheme-Value>)}*
+<Scheme-Value> ::= <Signo> | <Digito>  
+|#
+#|
+ Tenemos una funcion llamada (operate lrators lrands) donde
+lrators es una lista de funciones binarias de tama ̃no n y lrands es una lista
+de numeros de tama ̃no n + 1. La funcion retorna el resultado de aplicar
+sucesivamente las operaciones en lrators a los valores en lrands|#
+
+
+#|Si lrands tiene más de un elemento se utiliza la función operate de forma recursiva.
+En cada iteración se toma el primer elemento de lrators utilizando la función car y
+se toman los dos primeros elementos de lrands utilizando las funciones car y cadr, luego
+se realiza una operación utilizando estos elementos y se agrega el resultado a una nueva
+lista utilizando la función cons.
+Finalmente se llama recursivamente a la función operate con el resto de lrators y lrands
+utilizando las funciones cdr y cddr, respectivamente|#
+(define (operate lrators lrands)
+  (if (null? (cdr lrands))
+      (car lrands)
+      (operate (cdr lrators) (cons ((car lrators) (car lrands) (cadr lrands)) (cddr lrands)))))
+
+
+#|Ya con lo anterior podemos hacer pruebas como la siguiente:
+(operate (list + * + - *) '(1 2 8 4 11 6))
+ R/ 102
+(operate (list *) '(4 5))
+ R/ 20
+(operate (list * - *) '(5 5 5 5))
+ R/ 100
+|# 
+#|---------------------------------------------------------------------------|#
+
+
 
 
 
@@ -320,6 +519,57 @@
 ; Pruebas
 (count-odd-and-even '(14 (7 () (12 () ())) (26 (20 (17 () ()) ()) (31 () ()))))
 (count-odd-and-even '(8 (3 (1 () ()) (6 (4 () ()) (7 () ()))) (10 () (14 (13 () ()) ()))))
+
+
+;===========================================================================================;
+; PUNTO 16, operar binarias                                                                 ;
+;===========================================================================================;
+#|---------------------------------------------------------------------------|#
+#|Esta función toma una expresión de operación
+binaria y la evalúa para obtener el resultado.
+Tenemos la siguiente gramatica:
+<OperacionB>::= <int>
+::= (<OperacionB> ’suma <OperacionB>)
+::= (<OperacionB> ’resta <OperacionB>)
+::= (<OperacionB> ’multiplica <OperacionB>)
+|#
+
+(define (Operar-binarias operacionB)
+  (cond
+    ;; Si la entrada es un número, simplemente lo retorna
+    ((number? operacionB) operacionB)
+    #| Se extraen los elementos necesarios para realizar la operación.
+       El operador se obtiene utilizando la función cadr|#
+    ((list? operacionB)
+     (let ((operador (cadr operacionB))
+           (op1 (Operar-binarias (car operacionB)))
+           (op2 (Operar-binarias (caddr operacionB))))
+       (cond
+         ;; evaluamos que opcion es la que tenemos, si suma, resta o multiplicacion
+         ((equal? operador 'suma) (+ op1 op2))
+         ((equal? operador 'resta) (- op1 op2))
+         ((equal? operador 'multiplica) (* op1 op2))
+         (else (eopl:error "Operador invalido" operador)))))
+    ;; Si la entrada no es ni un número ni una expresión de operación, no es válida,
+    ;; teniendo en cuenta que estamos trabajando igualmente con "listas"
+    (else (eopl:error "Entrada invalida"))))
+
+
+
+#|Ya con lo anterior podemos hacer pruebas como la siguiente:
+(Operar-binarias 4)
+ R/ 4
+(Operar-binarias '(2 suma 9) )
+ R/ 11
+(Operar-binarias '(2 resta 9) )
+ R/ -7
+(Operar-binarias '(2 multiplica 9) )
+ R/ 18
+(Operar-binarias '( (2 multiplica 3) suma (5 resta 1 ) ) )
+ R/ 10
+|#
+#|---------------------------------------------------------------------------|#
+
 
 
 
