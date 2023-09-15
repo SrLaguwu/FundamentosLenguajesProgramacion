@@ -418,8 +418,8 @@ resultante sin modificacion alguna.|#
 ; corresponde al resultado de aplicar la funcion F sobre los elementos en la        ;
 ; posicion n-esima en L1 yL2.                                                       ;
 ;                                                                                   ;
-; <lista> := ()                                                                     ;
-;         := (<valor-de-scheme> <lista>)                                            ;
+; <lista-de-enteros> ::= ()                                                             ;
+;                    ::= (<int> <lista-de-enteros>)                                             ;
 ;===================================================================================;
 (define zip
   (lambda (F L1 L2)
