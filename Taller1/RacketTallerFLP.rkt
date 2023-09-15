@@ -1,18 +1,36 @@
 #lang eopl
 
+;===============================
+; INTEGRANTES
+;===============================
+; Nicol Valeria Ortiz Rodríguez - 202241463
+; Samuel David Gallego Posso - 202241997
+; Andres Mauricio Ortiz Bermúdez - 202110330
+
+; Link del repositorio de gitHub
+; https://github.com/SrLaguwu/FundamentosLenguajesProgramacion
+
+
 #|---------------------------------------------------------------------------|#
-;========================================================================================-=;
-; PUNTO 1,invertir listas                                                                  ;
-;==========================================================================================;
-#|invertir listas
-con esta funcion invertimos los pares individualmente|#
-#|GRAMATICA:
-<List> ::= '() | (<Scheme-Value> <List>)
-<Scheme-Value> ::= <Letra> | <Digito>  
-|#
+
+; Con esta función invertimos los pares individualmente
 (define (invertir-pares par)
   (cons (cadr par) (cons (car par) '()))
   )
+
+;===================================================================================;
+; PUNTO 1                                                                           ;
+;===================================================================================;
+; invert :                                                                          ;
+; Propósito:
+; L -> L : Procediemiento que retorna una lista similar a L, con
+; pares ordenados invertidos, es decir, y, x.f. ;
+;                                                                                   ;
+; GRAMATICA:
+; <List> ::= '() | (<Scheme-Value> <List>)
+; <Scheme-Value> ::= <Letra> | <Digito>                                             ;
+;====================================================================================
+
 #|con la siguiente funcion usamos la funcion de invertir pares con la lista L
 y luego se llama recursivamente la misma funcion invert para que continue con el resto de la lista|#
 (define (invert L)
@@ -49,10 +67,10 @@ y luego se llama recursivamente la misma funcion invert para que continue con el
 ;        := (<Scheme-Value> <List>)                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define down
-  (lambda (lista)
-    (if (empty? lista)
-        lista
-        (cons (list (car lista)) (down (cdr lista))))))
+  (lambda (L)
+    (if (empty? L)
+        L
+        (cons (list (car L)) (down (cdr L))))))
 
 ; Pruebas
 (down '(3 9 0 1))
@@ -73,12 +91,12 @@ y luego se llama recursivamente la misma funcion invert para que continue con el
 ;        := (<Scheme-Value> <List>)                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define list-set
-  (lambda (list n element)
-    (if (empty? list)
-        list
+  (lambda (L n x)
+    (if (empty? L)
+        L
         (if (zero? n)
-            (cons element (cdr list))
-            (cons (car list) (list-set (cdr list) (- n 1) element))))))
+            (cons x (cdr L))
+            (cons (car L) (list-set (cdr L) (- n 1) x))))))
 
 ; Pruebas
 (list-set '(a b c d) 3 '(1 5 10))
@@ -86,23 +104,30 @@ y luego se llama recursivamente la misma funcion invert para que continue con el
 (list-set '(1 2 3 4 5 E3) 2 'B2)
 
 #|---------------------------------------------------------------------------|#
-;========================================================================================-=;
-; PUNTO 4 , filtrar por numero, simbolo o palabras                                         ;
-;==========================================================================================;
-#||#
-#|GRAMATICA:
-<List> ::= '() | (<Scheme-Value> <List>)
-<Scheme-Value> ::= <Letra> | <Digito>  
-|#
-#|tenemo la funcion de filtrar, la cual recibe un preficado p y una lista para verificar|#
-(define (filter-in p l)
+
+
+;===================================================================================;
+; PUNTO 4                                                                           ;
+;===================================================================================;
+; filter-in :                                                                       ;
+; Propósito:                                                                        ;
+; P x L -> L : Procedimiento que retorna una lista que                            ;
+; contiene los elementos que pertenecen a L y que satisfacen el predicado P.        ;
+;                                                                                   ;
+; GRAMATICA:                                                                        ;
+; <List> ::= '() | (<Scheme-Value> <List>)                                          ;
+; <Scheme-Value> ::= <Letra> | <Digito>                                             ;
+;====================================================================================
+
+#|tenemos la funcion de filtrar, la cual recibe un preficado p y una lista para verificar|#
+(define (filter-in P L)
   ;;tenemos la condicion de si la lista no tiene nada, entonces retorna una lista vacia
-  (cond ((null? l) '())
+  (cond ((null? L) '())
         ;;aqui empieza a validar cual predicado es el que pasamos, luego con el cons tomamos
         ;;la cabeza de la lista y luego hacemos un llamado recursivo de la funcion con el resto de la lista
-        ((p (car l)) (cons (car l) (filter-in p (cdr l))))
+        ((P (car L)) (cons (car L) (filter-in P (cdr L))))
         ;;de lo contrario filtramos con el predicado en el resto de la lista l
-        (else (filter-in p (cdr l)))))
+        (else (filter-in P (cdr L)))))
 
 
 
@@ -141,6 +166,14 @@ y luego se llama recursivamente la misma funcion invert para que continue con el
                   [else (throwPosition pred (cdr list) (+ pos 1))]))))
       (throwPosition P L posicion))))
 
+; PRUEBAS
+(list-index number? '(a 2 (1 3) b 7))
+; R// 1
+(list-index symbol? '(a (b c) 17 foo))
+; R// 0
+(list-index symbol? '(1 2 (a b) 3))
+; R// #f
+
 ; La función falla cuando se ponen predicados que sólo aceptan números
 ; y la lista contiene elementos numéricos y no numéricos,
 ; por ejemplo con (list-index even? (a 2 (1 3) b 7)) la función falla porque even?
@@ -160,13 +193,13 @@ y luego se llama recursivamente la misma funcion invert para que continue con el
 ;        := (<Scheme-Value> <List>)                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define swapper
-  (lambda (e1 e2 list)
-    (if (empty? list)
-        list
+  (lambda (E1 E2 L)
+    (if (empty? L)
+        L
         (cond
-          [(equal? (car list) e1) (cons e2 (swapper e1 e2 (cdr list)))]
-          [(equal? (car list) e2) (cons e1 (swapper e1 e2 (cdr list)))]
-          [else (cons (car list) (swapper e1 e2 (cdr list)))]))))
+          [(equal? (car L) E1) (cons E2 (swapper E1 E2 (cdr L)))]
+          [(equal? (car L) E2) (cons E1 (swapper E1 E2 (cdr L)))]
+          [else (cons (car L) (swapper E1 E2 (cdr L)))]))))
 
 ; Pruebas
 (swapper 'a 'd '(a b c d))
@@ -178,13 +211,20 @@ y luego se llama recursivamente la misma funcion invert para que continue con el
 
 
 #|---------------------------------------------------------------------------|#
-;========================================================================================-=;
-; PUNTO 7                                                                                  ;
-;==========================================================================================;
-#|GRAMATICA:
-<List> ::= '() | {(<Scheme-Value>)}*
-<Scheme-Value> ::= <Letra> | <Digito>  
-|#
+
+;===================================================================================;
+; PUNTO 7                                                                           ;
+;===================================================================================;
+; cartesian-product :                                                               ;
+; Propósito:                                                                        ;
+; L1 x L2 -> L : Procedimiento que retorna una lista de tuplas que representen      ;
+; el producto cartesiano entre L1 y L2.                                             ;
+;
+; GRAMATICA:
+; <List> ::= '() | {(<Scheme-Value>)}*
+; <Scheme-Value> ::= <Letra> | <Digito>                                             ;
+;====================================================================================
+
 #|temenos una funcion llamada cartesian-product que recibe como
 argumentos 2 listas de simbolos sin repeticiones L1 y L2. La funcion debe
 retornar una lista de tuplas que representen el producto cartesiano entre L1
@@ -235,10 +275,6 @@ que contiene x y y como elementos.
  R/ ((p 5) (p 6) (p 7) (q 5) (q 6) (q 7) (r 5) (r 6) (r 7))
 |#
 
-#|---------------------------------------------------------------------------|#
-
-
-
 
 ;========================================================================================-=;
 ; PUNTO 8                                                                                  ;
@@ -277,7 +313,15 @@ que contiene x y y como elementos.
          [else (mapping F (cdr L1) (cdr L2))])]
       [else (report-lists-different-size L1 L2 'mapping)])))
 
+; PRUEBAS
+ (mapping (lambda (d) (* d 2)) (list 1 2 3) (list 2 4 6))
+; R// ((1 2) (2 4) (3 6))
+(mapping (lambda (d) (* d 3)) (list 1 2 2) (list 2 4 6))
+; R// ((2 6))
+(mapping (lambda (d) (* d 2)) (list 1 2 3) (list 3 9 12))
+; R// ()
 
+; ============================================================================
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; FUNCION AUXILIAR                                                       ;
@@ -315,12 +359,12 @@ que contiene x y y como elementos.
 ;        := (<Scheme-Value> <List>)                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define inversions
-  (lambda (list)
-    (if (empty? list)
+  (lambda (L)
+    (if (empty? L)
         0
         (+
-         (predicate-count (lambda (n) (< n (car list))) (cdr list))
-         (inversions (cdr list))))))
+         (predicate-count (lambda (n) (< n (car L))) (cdr L))
+         (inversions (cdr L))))))
 
 ; Pruebas
 (inversions '(2 3 8 6 1))
@@ -328,29 +372,38 @@ que contiene x y y como elementos.
 (inversions '(3 2 1))
 
 #|---------------------------------------------------------------------------|#
-;===================================================================================;
-; PUNTO 10                                                                          ;
-;===================================================================================;
-#|GRAMATICA:
-<List> ::= '() | (<Scheme-Value> <List>)
-<Scheme-Value> ::= <Letra> | <Digito>  
-|#
+
+;==========================================================================================;
+; PUNTO 10                                                                                 ;
+;==========================================================================================;
+; up :                                                                                     ;
+; Propósito:                                                                               ;
+; L -> L: Procedimiento que  remover un par de paréntesis a
+; cada elemento del nivel más alto de la lista. Si un elemento de este nivel
+; no es una lista (no tiene paréntesis), este elemento es incluido en la salida
+; resultante sin modificación alguna.                                                       ;
+;                                                                                          ;
+; GRAMATICA:
+; <List> ::= '() | (<Scheme-Value> <List>)
+; <Scheme-Value> ::= <Letra> | <Digito>                                                    ;
+;==========================================================================================;
+
 #|Tenemos una funcion llamada up que recibe como entrada una
 lista L, y lo que debe realizar la funcion es remover un par de parentesis a
 cada elemento del nivel mas alto de la lista. Si un elemento de este nivel
 no es una lista (no tiene parentesis), este elemento es incluido en la salida
 resultante sin modificacion alguna.|#
 
-(define (up lst)
+(define (up L)
   ;;validamos si la lista inicial esta vacia, si es asi retorna una lista vacia
-  (if (null? lst)
+  (if (null? L)
       '()
       #|aqui usamos una funcion llamada my-apend, la cual fue creada y explicada en el ejercicio
        numero 7 del taller actual que sirve para concatenar dos listas, validamos con el if Si el primer elemento
        de lst es una lista, si es asi,se agrega ese elemento directamente a la lista resultante.
        De lo contrario, se crea una lista que contiene el primer elemento de lst. Luego, se llama
        recursivamente a la función up con el resto de lst y se concatena el resultado con la lista resultante.|#
-      (my-append (if (list? (car lst)) (car lst) (list (car lst))) (up (cdr lst)))
+      (my-append (if (list? (car L)) (car L) (list (car L))) (up (cdr L)))
   ))
 
 #|Ya con lo anterior podemos hacer pruebas como la siguiente:
@@ -383,7 +436,11 @@ resultante sin modificacion alguna.|#
          [else (cons (F (car L1) (car L2)) (zip F (cdr L1) (cdr L2)))])]
       [else (report-lists-different-size L1 L2 'zip)])))
 
-
+; PRUEBAS
+(zip + '(1 4) '(6 2))
+; R// (7 6)
+(zip * '(11 5 6) '(10 9 8))
+; R// (110 45 48)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; PUNTO 12                                                                ;
@@ -394,12 +451,12 @@ resultante sin modificacion alguna.|#
 ;                                                                         ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define filter-acum
-  (lambda (a b operation acum filter)
+  (lambda (a b F acum filter)
     (if (equal? a b)
-        (if (filter a) (operation acum a) acum)
+        (if (filter a) (F acum a) acum)
         (if (filter a)
-            (filter-acum (+ a 1) b operation (operation acum a) filter)
-            (filter-acum (+ a 1) b operation acum filter)))))
+            (filter-acum (+ a 1) b F (F acum a) filter)
+            (filter-acum (+ a 1) b F acum filter)))))
 
 ; Pruebas
 (filter-acum 1 10 - 30 even?)
@@ -408,14 +465,19 @@ resultante sin modificacion alguna.|#
 (filter-acum 1 10 + 0 odd?)
 
 
-#|---------------------------------------------------------------------------|#
 ;=====================================================================================;
-; PUNTO 13 , operadores                                                               ;
+; PUNTO 13                                                                            ;
 ;=====================================================================================;
-#|GRAMATICA:
-<List> ::= {(<Scheme-Value>)}*
-<Scheme-Value> ::= <Signo> | <Digito>  
-|#
+; operate :                                                                           ;
+; Propósito:                                                                          ;
+; lrators X lrands -> L: Procedimiento que retorna el resultado de aplicar
+; sucesivamente las operaciones en lrators a los valores en lrands                    ;
+;                                                                                     ;
+; GRAMATICA:
+; <List> ::= {(<Scheme-Value>)}*
+; <Scheme-Value> ::= <Signo> | <Digito>                                               ;
+;=====================================================================================;
+
 #|
  Tenemos una funcion llamada (operate lrators lrands) donde
 lrators es una lista de funciones binarias de tama ̃no n y lrands es una lista
@@ -491,7 +553,12 @@ utilizando las funciones cdr y cddr, respectivamente|#
                 (throwPath num (caddr arb) (cons 'right cam)))])))) ; Buscar en el subárbol derecho.
       (reverseList (throwPath n BST empty))))) ; Comenzar la búsqueda desde la raíz.
 
-
+; PRUEBAS
+(path 17 '(14 (7 () (12 () ()))
+(26 (20 (17 () ())
+())
+(31 () ()))))
+; (right left left)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; PUNTO 15                                                                ;
@@ -504,14 +571,14 @@ utilizando las funciones cdr y cddr, respectivamente|#
 ;        := (<Integer> <Tree> <Tree>)                                     ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define count-odd-and-even
-  (lambda (tree)
-    (if (empty? tree)
+  (lambda (arbol)
+    (if (empty? arbol)
         (list 0 0)
-        (letrec ([left (count-odd-and-even (cadr tree))]
-                 [right (count-odd-and-even (caddr tree))]
+        (letrec ([left (count-odd-and-even (cadr arbol))]
+                 [right (count-odd-and-even (caddr arbol))]
                  [evens (+ (car left) (car right))]
                  [odds (+ (cadr left) (cadr right))]
-                 [value (car tree)])
+                 [value (car arbol)])
           (if (even? value)
               (list (+ evens 1) odds)
               (list evens (+ odds 1)))))))
@@ -521,18 +588,22 @@ utilizando las funciones cdr y cddr, respectivamente|#
 (count-odd-and-even '(8 (3 (1 () ()) (6 (4 () ()) (7 () ()))) (10 () (14 (13 () ()) ()))))
 
 
-;===========================================================================================;
-; PUNTO 16, operar binarias                                                                 ;
-;===========================================================================================;
-#|---------------------------------------------------------------------------|#
-#|Esta función toma una expresión de operación
-binaria y la evalúa para obtener el resultado.
-Tenemos la siguiente gramatica:
-<OperacionB>::= <int>
-::= (<OperacionB> ’suma <OperacionB>)
-::= (<OperacionB> ’resta <OperacionB>)
-::= (<OperacionB> ’multiplica <OperacionB>)
-|#
+;=======================================================================================;
+; PUNTO 16                                                                              ;
+;=======================================================================================;
+; Operar-binarias :                                                                     ;
+; Propósito:                                                                            ;
+; operacionB -> int : Procedimiento que retorna el resultado de hacer
+; las operaciones suma, resta y multiplicación correspondientes                         ;
+;                                                                                       ;
+; Esta función toma una expresión de operación binaria y la evalúa para
+; obtener el resultado.
+; Tenemos la siguiente gramatica:
+; <OperacionB>::= <int>
+; ::= (<OperacionB> ’suma <OperacionB>)                                                 ;
+; ::= (<OperacionB> ’resta <OperacionB>)                                                ;
+; ::= (<OperacionB> ’multiplica <OperacionB>)s>)                                        ;
+;=======================================================================================;
 
 (define (Operar-binarias operacionB)
   (cond
@@ -568,10 +639,6 @@ Tenemos la siguiente gramatica:
 (Operar-binarias '( (2 multiplica 3) suma (5 resta 1 ) ) )
  R/ 10
 |#
-#|---------------------------------------------------------------------------|#
-
-
-
 
 ;===========================================================================================;
 ; PUNTO 17                                                                                  ;
@@ -610,13 +677,20 @@ Tenemos la siguiente gramatica:
 ; <lista-de-enteros> ::= ()                                                             ;
 ;                    ::= (<int> <lista-de-enteros>)                                     ;
 ;=======================================================================================;
+
 (define prod-scalar-matriz
   (lambda (mat vec)
     (cond
       [(null? mat) empty]
       [else (cons (prod-scalar-list (car mat) vec) (prod-scalar-matriz (cdr mat) vec))])))
 
+; PRUEBAS
+(prod-scalar-matriz '((1 1) (2 2)) '(2 3))
+; ((2 3) (4 6))
+(prod-scalar-matriz '((1 1) (2 2) (3 3)) '(2 3))
+; ((2 3) (4 6) (6 9))
 
+; =========================================================================
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; FUNCION AUXILIAR                                                        ;
@@ -625,10 +699,11 @@ Tenemos la siguiente gramatica:
 ;                                                                         ;
 ; Retorna una lista de la suma de dos listas, los elementos se            ;
 ; suman posciionalmente                                                   ;
-;                                                                         ;
-; <List> := ()                                                            ;
-;        := (<Scheme-Value> <List>)                                       ;
+;
+; <lista-de-enteros> ::= ()                                               ;
+;                    ::= (<int> <lista-de-enteros>                        ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define sum-lists
   (lambda (list1 list2)
     (cond [(and (empty? list1) (empty? list2)) empty]
@@ -647,16 +722,16 @@ Tenemos la siguiente gramatica:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; pascal : Number -> List                                                 ; 
 ;                                                                         ;
-; Retorna la lista de un triangulo pascal                                 ;
+; Retorna la lista de un triangulo pascal en la fila dada.                ;
 ;                                                                         ;
-; <List> := ()                                                            ;
-;        := (<Scheme-Value> <List>)                                       ;
+;<lista-de-enteros> ::= ()                                                ;
+;                   ::= (<int> <lista-de-enteros                          ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define pascal
-  (lambda (n)
-    (if (equal? n 1)
+  (lambda (N)
+    (if (equal? N 1)
         (list 1)
-        (let ([prev (pascal (- n 1))])
+        (let ([prev (pascal (- N 1))])
           (sum-lists (cons 0 prev) prev)))))
 
 ; Pruebas
