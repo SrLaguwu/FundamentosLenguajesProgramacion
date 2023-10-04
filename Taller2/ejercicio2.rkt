@@ -1,179 +1,178 @@
 #lang eopl
+(require "ejercicio1.rkt")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;                     FUNCIONES AUXILIARES                        ;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define lengthList
-  (lambda (list)
-    (if (null? list)
-        0
-        (+ 1 (lengthList (cdr list)) )
-     )
-   )
-)
-
-(define joinList
-  (lambda (list1 list2)
-    (if (null? list1)
-        list2
-        (cons (car list1) (joinList (cdr list1) list2))
-     )   
-   )
-)
-
-;   =========================   GRAMÁTICA   =========================  
-; <SAT>       ::= ('FNC <total-variable> <int> (<list-and>)+)
-; <list-or>  ::= (<valor>+ 'or)
-; <valor>     ::= <int>
-; <list-and> ::= (<lista-or>+ 'and)
+;  _______________________________________________________________
+; |                                                               |
+; | TALLER 2                                                      |
+; |_______________________________________________________________|
+; |                                                               |
+; | Nicol Valeria Ortiz Rodríguez - 202241463                     |
+; | Samuel David Gallego Posso - 202241997                        |
+; | Andres Mauricio Ortiz Bermúdez - 202110330                    |
+; |                                                               |
+; | Link del repositorio de GitHub                                |
+; | https://github.com/SrLaguwu/FundamentosLenguajesProgramacion  |
+; |_______________________________________________________________|
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;                   REPRESENTACIÓN CON LISTAS                     ;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;          ABSTRACCIÓN DEL TIPO DE DATO - CONSTRUCTORES           ;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define valor
-  (lambda (num)
-     (if (number? num)
-         (list 'valor num)
-         (eopl:error 'valor "Expecting a number, given ~s" num))
-    ))
-
-(define total-variables
-  (lambda (num)
-    (list 'total-variables num)
-    )
-)
-
-(define list-or-aux
-  (lambda (lst-num)
+;  _________________________________________________
+; |                                                 |
+; | PUNTO 2 - 1                                     |
+; |_________________________________________________|
+;  _________________________________________________
+; |                                                 |
+; | PARSER                                          |
+; |_________________________________________________|
+;  _________________________________________________
+; |                                                 |
+; | parse-to-values-list : List -> List             |
+; |_________________________________________________|
+; |                                                 |
+; | Toma una lista de la representación concreta    |
+; | de <OrList> y retorna una lista de              |
+; | <Values> en sintaxis abstracta                  |
+; |_________________________________________________|
+(define parse-to-values-list
+  (lambda (values)
     (cond
-      [(= (lengthList lst-num) 2) (list (valor (car lst-num)))]
-      [else (joinList (list (valor (car lst-num))) (list-or-aux (cdr lst-num)))]
-      )
-    ))
+      [(equal? (car values) 'or) empty]
+      [else (cons (value (car values))
+                  (parse-to-values-list (cdr values)))])))
 
-(define list-or
-  (lambda (lst-or)
-    (list 'list-or (list-or-aux lst-or))
-    ))
-
-(define list-and-aux
-  (lambda (lst-or)
+;  _________________________________________________
+; |                                                 |
+; | parse-to-ors-list : List -> List                |
+; |_________________________________________________|
+; |                                                 |
+; | Toma una lista de la representación concreta    |
+; | de <AndList> y retorna una lista de ors en      |
+; | sintaxis abstracta                              |
+; |_________________________________________________|
+(define parse-to-ors-list 
+  (lambda (orslist)
     (cond
-      [(= (lengthList lst-or) 2) (list (car lst-or))]
-      [else (joinList (list (car lst-or)) (list-and-aux (cdr lst-or)))]
-      )
-    ))
+      [(equal? (car orslist) 'and) empty]
+      [else (cons (or-list (parse-to-values-list (car orslist)))
+                  (parse-to-ors-list (cdr orslist)))])))
 
-(define list-and
-  (lambda (lst-and)
-    (list 'list-and (list-and-aux lst-and))
-    ))
-
-;; PRUEBAS
-(list-and (list (list-or '(3 4 5 or)) (list-or '(94 3 2 87 3 or)) 'and))                                                    
-(list-and (list (list-or '(3 or)) (list-or '(94 3 2 87 3 or))
-                 (list-or '(45 2 3 4 90 or)) 'and)) 
-
-(define list-sat
-  (lambda (sym var lst-and)
-    (list 'SAT sym var lst-and)
-    ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;                               PARSER                            ;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; parseAuxListAnd :
-;; Propósito:
-;; lst-and-conr -> list : Procedimiento que dada una lista con sintaxis
-;; concreta, crea el árbol de sintaxis abstractra.
-
-(define parseAuxListAnd 
-  (lambda(lst-and-conr)
-    (cond
-      [(= (lengthList lst-and-conr) 1) (list (car lst-and-conr))]
-      [else (joinList (list (list-or (car lst-and-conr)))
-                      (parseAuxListAnd (cdr lst-and-conr))) ]
-      )
-    ))
-
-;; PARSEBNF :
-;; Propósito:
-;; lst-and -> list : Procedimiento que  dada una lista con la 
-;; representación concreta de una instancia SAT, construya el árbol 
-;; de sintaxis abstracta basado en listas.
-
+;  _________________________________________________
+; |                                                 |
+; | PARSEBNF : List -> <SAT>                        |
+; |_________________________________________________|
+; |                                                 |
+; | Toma una lista de la representación concreta    |
+; | de <SAT> y retorna construye un arbol de        |
+; | sintaxis abstracta basado en listas             |
+; |_________________________________________________|
 (define PARSEBNF
   (lambda (lst-and)
-    (list-sat (car lst-and) (total-variables (cadr lst-and))
-               (list-and (parseAuxListAnd (caddr lst-and))))
-          
-    )
-  )
+    (fnc (cadr lst-and)
+         (and-list (parse-to-ors-list (caddr lst-and))))))
 
-; PRUEBAS
+;  _________________________________________________
+; |                                                 |
+; | PRUEBAS                                         |
+; |_________________________________________________|
 (PARSEBNF '(FNC 3 ((3 4 5 or) (-4 3 -5 or) (-5 5 3 4 or) and)))
 (PARSEBNF '(FNC 3 ((1 2 3 or) (-1 or) (-1 -2 -3 or) (-1 -2 or) and)))
 (PARSEBNF '(FNC 3 ((-5 or) and)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;                             UNPARSER                            ;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
-;; parse-or :
-;; Propósito:
-;; list-or -> list : Procedimiento que dada una lista con sintaxis
-;; abstracta, retorna la sintaxis concreta de la producción list-or.
 
-(define parse-or
-  (lambda (list-or)
-    (cond
-        [(null? list-or) (list 'or)]
-        [(eqv? (car list-or) 'list-or) (parse-or (cadr list-or))]
-        [(eqv? (car (car list-or)) 'valor) (joinList (list (cadr (car list-or)))
-                                                 (parse-or (cdr list-or)))]
-      )
-    )
-  )
+;  _________________________________________________
+; |                                                 |
+; | PUNTO 2 - 2                                     |
+; |_________________________________________________|
+;  _________________________________________________
+; |                                                 |
+; | UNPARSER                                        |
+; |_________________________________________________|
+;  _________________________________________________
+; |                                                 |
+; | unparse-each-value-to-list : List -> List       |
+; |_________________________________________________|
+; |                                                 |
+; | Dada una lista de <Value> en sintaxis abstracta |
+; | devuelve una lista de valores en sintaxis       |
+; | concreta                                        |
+; |_________________________________________________|
+(define unparse-each-value-to-list
+  (lambda (values)
+    (if (null? values)
+        empty
+        (cons (value->number (car values))
+              (unparse-each-value-to-list (cdr values))))))
 
-;; lista-and-abs :
-;; Propósito:
-;; lista -> list : Procedimiento que dada una lista con sintaxis
-;; abstracta, retorna la sintaxis concreta de la producción list-and.
+;  _________________________________________________
+; |                                                 |
+; | unparse-or : <OrList> -> List                   |
+; |_________________________________________________|
+; |                                                 |
+; | Dada un dato <OrList> en sintaxis abstracta,    |
+; | devuelve una representación de OrList en        |
+; | sintaxis concreta                               |
+; |_________________________________________________|
+(define unparse-or
+  (lambda (ast)
+    (if (or-list? ast)
+        (let ([values (unparse-each-value-to-list (or-list->values ast))])
+          (join-list values '(or)))
+        (eopl:error "Abstract Syntax Tree must be or-list?, given" ast))))
 
-(define list-and-abs
-  (lambda (lista)
-    (cond
-      [(null? lista) (list 'and)]
-      [(eqv? (car lista) 'list-and) (list-and-abs (cadr lista))]
-      [else (joinList (list (parse-or (car lista))) (list-and-abs (cdr lista)) )]
-)
-))
+;  __________________________________________________
+; |                                                  |
+; | unparse-each-or-to-list : List -> List           |
+; |__________________________________________________|
+; |                                                  |
+; | Dada una lista de <OrList> en sintaxis abstracta |
+; | devuelve una lista de OrList en sintaxis         |
+; | concreta                                         |
+; |__________________________________________________|
+(define unparse-each-or-to-list
+  (lambda (ors-list)
+    (if (null? ors-list)
+        empty
+        (cons (unparse-or (car ors-list))
+              (unparse-each-or-to-list (cdr ors-list))))))
 
-;; UNPARSEBNF :
-;; Propósito:
-;; lst-and-abs -> list : Procedimiento que  dada una lista con la 
-;; representación abstraacta de una instancia SAT, retorne la
-;; sintaxis concreta basada en listas.
+;  _________________________________________________
+; |                                                 |
+; | unparse-and-list : <AndList> -> List            |
+; |_________________________________________________|
+; |                                                 |
+; | Dada un dato <AndList> en sintaxis abstracta,   |
+; | devuelve una representación de AndList en       |
+; | sintaxis concreta                               |
+; |_________________________________________________|
+(define unparse-and-list
+  (lambda (ast)
+    (if (and-list? ast)
+        (let ([ors (and-list->ors ast)])
+          (join-list (unparse-each-or-to-list ors) '(and)))
+        (eopl:error "Abstract Syntax Tree must be and-list?, given" ast))))
 
+;  _________________________________________________
+; |                                                 |
+; | UNPARSEBNF : <SAT> -> List                      |
+; |_________________________________________________|
+; |                                                 |
+; | Dada un dato <SAT> en sintaxis abstracta basado |
+; | en listas, devuelve una representación de       |
+; | de SAT en sintaxis concreta basada en listas    |
+; |_________________________________________________|
 (define UNPARSEBNF
-  (lambda (lst-and-abs)
-    (let
-        ( (fnc (cadr lst-and-abs))
-          (var (cadr (caddr lst-and-abs)))
-          )
-      (list fnc var (list-and-abs (cadddr lst-and-abs)) ))
-    )
-  )
+  (lambda (ast)
+    (if (fnc? ast)
+        (let ([total (fnc->var ast)]
+              [and-list (fnc->and-list ast)])
+          (list 'FNC total (unparse-and-list and-list)))
+        (eopl:error "Abstract Syntax Tree is not valid FNC, given" ast))))
 
-; PRUEBAS
+;  _________________________________________________
+; |                                                 |
+; | PRUEBAS                                         |
+; |_________________________________________________|
 (UNPARSEBNF (PARSEBNF '(FNC 3 ((1 2 3 or) (-1 or) (-1 -2 -3 or) (-1 -2 or) and))))
 (UNPARSEBNF (PARSEBNF '(FNC 3 ((3 4 5 or) (-4 3 -5 or) (-5 5 3 4 or) and))))
 (UNPARSEBNF (PARSEBNF '(FNC 3 ((-5 or) and))))
-
