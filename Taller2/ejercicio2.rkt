@@ -1,5 +1,6 @@
 #lang eopl
 (require "ejercicio1.rkt")
+(provide (all-defined-out))
 
 ;  _______________________________________________________________
 ; |                                                               |
@@ -14,7 +15,24 @@
 ; | https://github.com/SrLaguwu/FundamentosLenguajesProgramacion  |
 ; |_______________________________________________________________|
 
-
+;  _________________________________________________
+; |                                                 |
+; | FUNCIONES AUXILIARES                            |
+; |_________________________________________________|
+;  _________________________________________________
+; |                                                 |
+; | FUNCIÓN AUXILIAR                                |
+; | join-list : List x List -> List                 |
+; |_________________________________________________|
+; |                                                 |
+; | Toma dos listas y las une en una sola,          |
+; | se utiliza en el unparser para unir listas      |
+; |_________________________________________________|
+(define join-list
+  (lambda (list1 list2)
+    (if (null? list1)
+        list2
+        (cons (car list1) (join-list (cdr list1) list2)))))
 
 ;  _________________________________________________
 ; |                                                 |
@@ -77,8 +95,6 @@
 (PARSEBNF '(FNC 3 ((3 4 5 or) (-4 3 -5 or) (-5 5 3 4 or) and)))
 (PARSEBNF '(FNC 3 ((1 2 3 or) (-1 or) (-1 -2 -3 or) (-1 -2 or) and)))
 (PARSEBNF '(FNC 3 ((-5 or) and)))
-
-
 
 ;  _________________________________________________
 ; |                                                 |

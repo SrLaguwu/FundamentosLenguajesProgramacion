@@ -14,8 +14,6 @@
 ; | https://github.com/SrLaguwu/FundamentosLenguajesProgramacion  |
 ; |_______________________________________________________________|
 
-
-
 ;  _________________________________________________
 ; |                                                 |
 ; | FUNCIONES AUXILIARES                            |
@@ -34,23 +32,6 @@
   (lambda (list predicate)
     (if (null? list) #t
         (and (predicate (car list)) (test-list (cdr list) predicate)))))
-
-;  _________________________________________________
-; |                                                 |
-; | FUNCIÓN AUXILIAR                                |
-; | join-list : List x List -> List                 |
-; |_________________________________________________|
-; |                                                 |
-; | Toma dos listas y las une en una sola,          |
-; | se utiliza en el unparser para unir listas      |
-; |_________________________________________________|
-(define join-list
-  (lambda (list1 list2)
-    (if (null? list1)
-        list2
-        (cons (car list1) (join-list (cdr list1) list2)))))
-
-
 
 ;  _________________________________________________
 ; |                                                 |
@@ -78,8 +59,6 @@
 ; | <OrList>  ::= <Value>+                          |
 ; | <Value>   ::= <Integer>                         |
 ; |_________________________________________________|
-
-
 
 ;  _________________________________________________
 ; |                                                 |
@@ -286,8 +265,6 @@
               (or-list (list (value -1) (value -2) (value -3)))
               (or-list (list (value 3) (value 4)))
               (or-list (list (value 2))))))
-
-
 
 ;  _________________________________________________
 ; |                                                 |
