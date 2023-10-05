@@ -170,8 +170,8 @@
 ; |_________________________________________________|
 (define bruteforce-sat
   (lambda (sat permutations-left permutation)
-    (cond [(equal? permutations-left 1) (list 'insatisfactible empty)]
-          [(equal? (eval-sat sat permutation) #true) (list 'satisfactible permutation)]
+    (cond [(equal? (eval-sat sat permutation) #true) (list 'satisfactible permutation)]
+          [(equal? permutations-left 1) (list 'insatisfactible empty)]
           [else (bruteforce-sat sat (- permutations-left 1) (next-permutation permutation))])))
 
 ;  _________________________________________________
